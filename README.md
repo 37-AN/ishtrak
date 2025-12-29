@@ -13,7 +13,7 @@ A comprehensive, production-ready AI Issue Tracker for IT operations that runs c
 - **Analytics Dashboard**: Comprehensive performance metrics and insights
 
 ### AI & Learning System
-- **Local AI Integration**: Uses Ollama with llama3.1:8b model (CPU optimized)
+- **Local AI Integration**: Uses Ollama with gemma3:4b model (CPU optimized)
 - **Knowledge Base**: Local SQLite-based vector storage for similar issue retrieval
 - **Learning Loop**: High-rated solutions prioritized for future retrieval
 - **Fallback System**: Template-based generation when AI is unavailable
@@ -48,7 +48,7 @@ A comprehensive, production-ready AI Issue Tracker for IT operations that runs c
 ### Prerequisites
 - Node.js 18+ and Bun runtime
 - Ollama installed locally
-- llama3.1:8b model pulled in Ollama
+- gemma3:4b model pulled in Ollama
 
 ### Quick Start
 ```bash
@@ -74,7 +74,7 @@ bun run dev
 curl -fsSL https://ollama.ai/install.sh | sh
 
 # Pull the required model
-ollama pull llama3.1:8b
+ollama pull gemma3:4b
 
 # Start Ollama service
 ollama serve
@@ -120,7 +120,7 @@ ollama serve
 ```env
 DATABASE_URL="file:./dev.db"
 OLLAMA_BASE_URL="http://localhost:11434"
-OLLAMA_MODEL="llama3.1:8b"
+OLLAMA_MODEL="gemma3:4b"
 ```
 
 ### Ollama Service Configuration
@@ -133,8 +133,8 @@ The Ollama service runs on port 3031 and provides:
 
 ## 🧠 AI Model Details
 
-### Default Configuration
-- **Model**: llama3.1:8b
+-### Default Configuration
+- **Model**: gemma3:4b
 - **Parameters**: 8 billion (CPU optimized)
 - **Temperature**: 0.7 (creative but consistent)
 - **Max Tokens**: 2048-4000 (context dependent)
@@ -230,7 +230,7 @@ CMD ["bun", "start"]
 ### Common Issues
 1. **Ollama Connection Failed**
    - Check if Ollama is running: `ollama list`
-   - Verify model is pulled: `ollama pull llama3.1:8b`
+   - Verify model is pulled: `ollama pull gemma3:4b`
    - Check service port: `curl http://localhost:11434/api/tags`
 
 2. **Database Errors**

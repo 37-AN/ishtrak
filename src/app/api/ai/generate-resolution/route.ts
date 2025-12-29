@@ -354,7 +354,7 @@ export async function POST(request: NextRequest) {
       data: {
         issueId,
         resolutionText,
-        modelUsed: 'llama3.1:8b (Ollama + RAG)',
+        modelUsed: 'gemma3:4b (Ollama + RAG)',
         generatedAt: new Date()
       },
       include: {

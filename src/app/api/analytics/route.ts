@@ -284,7 +284,7 @@ export async function GET(request: NextRequest) {
       categories: categoryData,
       severity: severityData,
       aiPerformance: {
-        modelUsed: 'llama3.1:8b',
+        modelUsed: 'gemma3:4b',
         totalResolutions: issuesWithResolutions,
         avgRating: Math.round(avgUserRating * 100) / 100,
         successRate: Math.round((resolvedIssues / totalIssues) * 10000) / 100

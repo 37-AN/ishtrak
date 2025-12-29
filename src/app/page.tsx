@@ -243,7 +243,7 @@ export default function Home() {
                     <div>
                       <h4 className="font-medium mb-2">AI Model Configuration</h4>
                       <p className="text-sm text-muted-foreground mb-2">
-                        Ollama model: llama3.1:8b (CPU optimized)
+                        Ollama model: gemma3:4b (CPU optimized)
                       </p>
                       <Button variant="outline" size="sm">Test Connection</Button>
                     </div>
