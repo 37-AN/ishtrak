@@ -1,0 +1,50 @@
+// Dependency graph for AI Issue Tracker
+digraph AI_Issue_Tracker {
+  rankdir=LR;
+  node [shape=box, style=filled, fillcolor="#f5f7ff", fontname="Helvetica"];
+
+  frontend [label="Frontend\n(Next.js App UI)", fillcolor="#dbeafe"];
+  next_app [label="Next.js App\n(src/app)", fillcolor="#bfdbfe"];
+  api_routes [label="API Route Handlers\n/src/app/api/*", shape=folder, fillcolor="#eef2ff"];
+  prisma_client [label="Prisma Client\n(src/lib/db.ts)", fillcolor="#e6f4ea"];
+  sqlite_db [label="SQLite (dev.db)\nPrisma datasource", fillcolor="#fef3c7"];
+  ollama_proxy [label="Ollama Proxy\n/api/ollama/*", fillcolor="#f3e8ff"];
+  ollama_service [label="Ollama Service\n(http://localhost:3031)", fillcolor="#fde68a"];
+  mini_service [label="mini-services/ollama-service", fillcolor="#fee2e2"];
+  knowledge_base [label="KnowledgeBase\n(prisma: knowledgeBase)", fillcolor="#ecfccb"];
+
+  // Groups for key API endpoints
+  issues_api [label="/api/issues\nGET, POST"];
+  resolve_api [label="/api/issues/{id}/resolve\nPOST"];
+  ai_gen_res [label="/api/ai/generate-resolution\nPOST"];
+  ai_gen_sop [label="/api/ai/generate-sop\nPOST"];
+  ai_retrieve [label="/api/ai/retrieve\nPOST"];
+  dashboards [label="/api/dashboard/stats\nGET\n/api/analytics\nGET"];
+
+  // Edges
+  frontend -> issues_api [label="calls"];
+  frontend -> ai_gen_res [label="request generation"];
+  frontend -> ai_retrieve [label="retrieve KB"];
+  frontend -> dashboards [label="fetch stats"];
+
+  issues_api -> prisma_client [label="reads/writes Issues, Users"];
+  resolve_api -> prisma_client [label="update Issue status"];
+  resolve_api -> ai_gen_sop [label="triggers SOP generation (fire-and-forget)", style=dashed];
+
+  ai_gen_res -> prisma_client [label="reads Issues, KB; writes AiResolution"];
+  ai_gen_res -> ollama_proxy [label="requests LLM (generate-resolution)"];
+  ai_gen_sop -> prisma_client [label="reads Resolutions; writes AiSop, KB"];
+  ai_gen_sop -> ollama_proxy [label="requests LLM (generate-sop)"];
+
+  ai_retrieve -> prisma_client [label="reads KnowledgeBase"];
+  ai_retrieve -> knowledge_base [label="retrieves entries"];
+
+  ollama_proxy -> ollama_service [label="forwards to local Ollama"];
+  mini_service -> ollama_service [label="runtime / helper service"];
+
+  prisma_client -> sqlite_db [label="connects to"];
+  prisma_client -> knowledge_base [label="model: KnowledgeBase"];
+
+  // A few styling constraints
+  edge [fontname="Helvetica", fontsize=10];
+}

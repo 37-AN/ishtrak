@@ -1,0 +1,121 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id        String   @id @default(cuid())
+  email     String   @unique
+  name      String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relations
+  reportedIssues Issue[]
+  ratings        AiRating[]
+}
+
+model Issue {
+  id             String     @id @default(cuid())
+  title          String
+  description    String
+  category       String
+  severity       String     // low, medium, high, critical
+  environment    String     // development, staging, production
+  systemAffected String
+  status         String     @default("open") // open, in_progress, resolved, closed
+  reporterId     String
+  createdAt      DateTime   @default(now())
+  resolvedAt     DateTime?
+  
+  // Relations
+  reporter      User           @relation(fields: [reporterId], references: [id])
+  resolutions   AiResolution[]
+  sops          AiSop[]
+  
+  @@index([status])
+  @@index([category])
+  @@index([severity])
+  @@index([createdAt])
+}
+
+model AiResolution {
+  id            String    @id @default(cuid())
+  issueId       String
+  resolutionText String
+  modelUsed     String
+  generatedAt   DateTime  @default(now())
+  userRating    Int?      // 1-5 scale
+  userFeedback  String?
+  knowledgeBaseId String?
+  
+  // Relations
+  issue Issue @relation(fields: [issueId], references: [id])
+  knowledgeBase KnowledgeBase? @relation(fields: [knowledgeBaseId], references: [id])
+  
+  @@index([issueId])
+  @@index([generatedAt])
+}
+
+model AiSop {
+  id            String    @id @default(cuid())
+  issueId       String
+  sopText       String
+  generatedAt   DateTime  @default(now())
+  userRating    Int?      // 1-5 scale
+  userFeedback  String?
+  knowledgeBaseId String?
+  
+  // Relations
+  issue Issue @relation(fields: [issueId], references: [id])
+  knowledgeBase KnowledgeBase? @relation(fields: [knowledgeBaseId], references: [id])
+  
+  @@index([issueId])
+  @@index([generatedAt])
+}
+
+model KnowledgeBase {
+  id             String  @id @default(cuid())
+  content        String
+  contentType    String  // resolution, sop
+  averageRating  Float   @default(0)
+  usageCount     Int     @default(0)
+  embedding      String? // Store embedding as JSON string
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+  
+  // Relations
+  resolutionEntries AiResolution[]
+  sopEntries       AiSop[]
+  
+  @@index([contentType])
+  @@index([averageRating])
+  @@index([usageCount])
+}
+
+model AiRating {
+  id            String    @id @default(cuid())
+  userId        String
+  targetType    String    // resolution, sop
+  targetId      String    // ID of the resolution or SOP
+  rating        Int       // 1-5 scale
+  feedback      String?
+  createdAt     DateTime  @default(now())
+  
+  // Relations
+  user User @relation(fields: [userId], references: [id])
+  
+  @@index([userId])
+  @@index([targetType])
+  @@index([rating])
+}

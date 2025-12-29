@@ -1,0 +1,305 @@
+openapi: 3.0.3
+info:
+  title: AI Issue Tracker - API
+  version: 1.0.0
+  description: OpenAPI-like summary for the local AI Issue Tracker API routes
+servers:
+  - url: http://localhost:3000
+paths:
+  /api:
+    get:
+      summary: Root API health
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json: {}
+
+  /api/issues:
+    get:
+      summary: List all issues
+      responses:
+        '200':
+          description: Array of issues
+          content:
+            application/json: {}
+    post:
+      summary: Create a new issue
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/IssueCreate'
+      responses:
+        '200':
+          description: Created
+
+  /api/issues/{id}/resolve:
+    post:
+      summary: Mark an issue as resolved and trigger SOP generation
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Issue resolved
+
+  /api/dashboard/stats:
+    get:
+      summary: Get dashboard statistics
+      responses:
+        '200':
+          description: Dashboard stats
+
+  /api/analytics:
+    get:
+      summary: Get analytics and trends
+      parameters:
+        - name: timeRange
+          in: query
+          schema:
+            type: string
+            enum: [7d, 30d, 90d, 1y]
+      responses:
+        '200':
+          description: Analytics payload
+
+  /api/ai/resolutions:
+    get:
+      summary: List AI resolutions
+      responses:
+        '200':
+          description: Array of AI resolutions
+
+  /api/ai/resolutions/{id}/rate:
+    post:
+      summary: Rate an AI resolution
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                rating:
+                  type: integer
+                  minimum: 1
+                  maximum: 5
+                feedback:
+                  type: string
+      responses:
+        '200':
+          description: Rating accepted
+
+  /api/ai/sops:
+    get:
+      summary: List SOPs
+      responses:
+        '200':
+          description: Array of SOPs
+
+  /api/ai/sops/{id}/export:
+    post:
+      summary: Export SOP in specified format
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                format:
+                  type: string
+                  enum: [markdown, txt, pdf]
+      responses:
+        '200':
+          description: Export payload { content, filename }
+
+  /api/ai/retrieve:
+    post:
+      summary: Retrieve relevant KB entries (local RAG)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                query:
+                  type: string
+                contentType:
+                  type: string
+                limit:
+                  type: integer
+      responses:
+        '200':
+          description: Relevant entries and related issues
+
+  /api/ai/generate-resolution:
+    post:
+      summary: Generate AI resolution (RAG + Ollama)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                issueId:
+                  type: string
+      responses:
+        '200':
+          description: Created resolution
+
+  /api/ai/generate-sop:
+    post:
+      summary: Generate SOP from resolution (Ollama)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                issueId:
+                  type: string
+      responses:
+        '200':
+          description: Created SOP
+
+  /api/ollama:
+    get:
+      summary: Proxy GET to local Ollama
+      responses:
+        '200':
+          description: Proxy response
+    post:
+      summary: Proxy POST to local Ollama
+      responses:
+        '200':
+          description: Proxy response
+
+  /api/ollama/generate-resolution:
+    post:
+      summary: Forward to Ollama /generate-resolution
+      responses:
+        '200':
+          description: Ollama resolution response
+
+  /api/ollama/generate-sop:
+    post:
+      summary: Forward to Ollama /generate-sop
+      responses:
+        '200':
+          description: Ollama SOP response
+
+components:
+  schemas:
+    User:
+      type: object
+      properties:
+        id:
+          type: string
+        email:
+          type: string
+        name:
+          type: string
+
+    Issue:
+      type: object
+      properties:
+        id:
+          type: string
+        title:
+          type: string
+        description:
+          type: string
+        category:
+          type: string
+        severity:
+          type: string
+        environment:
+          type: string
+        status:
+          type: string
+        reporterId:
+          type: string
+        createdAt:
+          type: string
+          format: date-time
+
+    IssueCreate:
+      type: object
+      required: [title, description, category, severity, environment, systemAffected, reporterName, reporterEmail]
+      properties:
+        title:
+          type: string
+        description:
+          type: string
+        category:
+          type: string
+        severity:
+          type: string
+        environment:
+          type: string
+        systemAffected:
+          type: string
+        reporterName:
+          type: string
+        reporterEmail:
+          type: string
+
+    AiResolution:
+      type: object
+      properties:
+        id:
+          type: string
+        issueId:
+          type: string
+        resolutionText:
+          type: string
+        modelUsed:
+          type: string
+        generatedAt:
+          type: string
+          format: date-time
+
+    AiSop:
+      type: object
+      properties:
+        id:
+          type: string
+        issueId:
+          type: string
+        sopText:
+          type: string
+
+    KnowledgeBase:
+      type: object
+      properties:
+        id:
+          type: string
+        content:
+          type: string
+        contentType:
+          type: string
+        averageRating:
+          type: number
+        usageCount:
+          type: integer
